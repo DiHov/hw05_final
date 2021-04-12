@@ -1,16 +1,18 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404, redirect, render
-
+from django.shortcuts import (get_list_or_404, get_object_or_404, redirect,
+                              render)
+from django.views.decorators.cache import cache_page
 from yatube.settings import PAGINATOR
 
 from .forms import CommentForm, PostForm
-from .models import Group, Post
+from .models import Group, Post, Follow
 
 User = get_user_model()
 
 
+@cache_page(20)
 def index(request):
     post_list = Post.objects.all()
     paginator = Paginator(post_list, PAGINATOR)
@@ -46,6 +48,8 @@ def new_post(request):
 def profile(request, username):
     author = get_object_or_404(User, username=username)
     posts = author.posts.all()
+    # if request.user.is_authenticated:
+    #     folowing = Follow.objects.filter(author=author, user=request.user).exists
     paginator = Paginator(posts, PAGINATOR)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -111,3 +115,30 @@ def page_not_found(request, exception):
 
 def server_error(request):
     return render(request, "misc/500.html", status=500)
+
+
+@login_required
+def follow_index(request):
+    post_list = following.request.user
+    paginator = Paginator(post_list, PAGINATOR)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    return render(request, "follow.html", {'page': page})
+
+
+@login_required
+def profile_follow(request, username):
+    user = User.objects.get(username=request.user)
+    author = User.objects.get(username=username)
+    if user is not author.follower:
+        Follow.objects.create(user=user, author=author)
+        return redirect('profile', username)
+
+
+@login_required
+def profile_unfollow(request, username):
+    user = User.objects.get(username=request.user)
+    author = User.objects.get(username=username)
+    if user == author.follower:
+        Follow.objects.delete(user=user, author=author)
+        return redirect('profile', username)
