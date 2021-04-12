@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Просмотр записи №{{ post.id }}{% endblock %}
+{% block header %}Просмотр записи №{{ post.id }}{% endblock %}
+{% block content %}
+{% load user_filters %}
+<main role="main" class="container">
+    <div class="row">
+        {% include "includes/card.html" with author=author %}
+
+        <div class="col-md-9">
+            {% include "includes/post.html" with post=post add_comment=False %}
+            {% include "includes/comments.html" with comments=comments form=form %}
+            {% include "includes/paginator.html" %}   
+        </div>
+        
+    </div>
+</main>
+{% endblock %}

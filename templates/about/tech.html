@@ -1,0 +1,42 @@
+<!-- templates/about/author.html -->
+{% extends "base.html" %}
+{% block title %}Об авторе проекта{% endblock %}
+{% block content %}
+{% load user_filters %}
+  <main role="main" class="container">
+    <div class="row">
+      <!-- Левый вспомогательный блок -->
+      <div class="col-md-3 mb-3 mt-1">
+        <div class="card">
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">
+                <div class="h3">
+                  Об авторе
+                </div> 
+              </li>
+              <li class="list-group-item">
+                <div class="h6 text-muted">
+                    <a href="https://github.com/DiHov">DiHov</a>
+                </div>
+              </li>
+            </ul>                                               
+          </div>                    
+        </div>                
+      </div>
+      <!-- Тело страницы -->
+      <div class="col-md-9">
+        <div class="card-body">                    
+          <div class="card-text">
+            <p>Для создания этого сайта, я приминил функцианал, который предоставляет нам
+              django framework версии 2.2. <a href="https://www.djangoproject.com/">Django</a> считается лучшим веб-фреймворком, написанным на Python. 
+              Этот инструмент удобно использовать для разработки сайтов, работающих с базами данных.</p>
+            <p>Таже хочется упоминуть о том, что привлекательности проекту добавил Bootstrap. 
+              <a href="https://getbootstrap.com/">Bootstrap</a> - это инструментарий с открытым исходным кодом для разработки с помощью HTML, CSS и JS.</p>
+            <p>Отдельный привет бессонным ночам и темам, которые я не понял вообще или не понял до конца =)</p>
+          </div>                    
+        </div>                
+      </div>            
+    </div>        
+  </main>
+{% endblock %}
