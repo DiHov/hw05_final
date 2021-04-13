@@ -125,7 +125,10 @@ class ViewTests(TestCase):
         response = self.authorized_client.get(
             reverse('profile', args=[self.test_user.username])
         )
-        self.assertEqual(response.context['author'].username, self.test_user)
+        self.assertEqual(
+            response.context['author'].username,
+            self.test_user.username
+        )
         self.assertIn('page', response.context)
         self.post_at_page(response)
 
@@ -134,7 +137,10 @@ class ViewTests(TestCase):
         response = self.authorized_client.get(
             reverse('post', args=[self.test_user.username, self.post.id])
         )
-        self.assertEqual(response.context['author'].username, self.test_user)
+        self.assertEqual(
+            response.context['author'].username,
+            self.test_user.username
+        )
         self.post_at_page(response)
 
     def test_404(self):
