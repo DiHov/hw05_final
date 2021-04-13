@@ -5,7 +5,7 @@
 {% load user_filters %}
 <main role="main" class="container">
     <div class="row">
-        {% include "includes/card.html" with author=author %}
+        {% include "includes/card.html" with author=author following=following %}
 
         <div class="col-md-9">                
             {% for post in page %} 
