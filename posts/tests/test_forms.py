@@ -8,7 +8,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from posts.forms import PostForm
-from posts.models import Group, Post
+from posts.models import Group, Post, Comment
 
 
 class PostFormTests(TestCase):
@@ -115,6 +115,30 @@ class PostFormTests(TestCase):
         self.assertEqual(last_object.text, form_data['text'])
         self.assertEqual(last_object.author, self.user)
         self.assertEqual(last_object.group.id, form_data['group'])
+
+    def test_add_guest_comment(self):
+        '''Проверка создания коммента без авторизации'''
+        post = Post.objects.create(
+            text='Текст тестового поста',
+            author=self.user,
+            group=self.group
+        )
+        count = Comment.objects.count()
+        form_data = {
+            'text': 'Текст тестового коммента',
+        }
+        url_add = reverse('add_comment', args=[self.user.username, post.id])
+        response = self.guest_client.post(
+            url_add,
+            data=form_data,
+            follow=True
+        )
+        url_login = reverse('login')
+        self.assertRedirects(
+            response,
+            f'{url_login}?next={url_add}'
+        )
+        self.assertEqual(Comment.objects.count(), count)
 
 
 class FormFieldsTests(TestCase):

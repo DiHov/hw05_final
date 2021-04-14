@@ -9,7 +9,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Group, Post
+from posts.models import Group, Post, Follow
 
 
 class ViewTests(TestCase):
@@ -24,6 +24,10 @@ class ViewTests(TestCase):
         )
         cls.test_user = User.objects.create_user(
             username='testuser',
+            password='12345'
+        )
+        cls.follower = User.objects.create_user(
+            username='follower',
             password='12345'
         )
         small_gif = (
@@ -147,3 +151,32 @@ class ViewTests(TestCase):
         '''Возвращает ли сервер код 404, если страница не найдена.'''
         response = self.guest_client.get('/unknownuser/')
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+
+    def test_profile_follow_unfollow(self):
+        '''Авторизованный пользователь может подписываться и удалять из подписок.'''
+        self.authorized_client.force_login(self.follower)
+        self.authorized_client.get(
+            reverse('profile_follow', args=[self.test_user.username])
+        )
+        self.assertTrue(Follow.objects.filter(user=self.follower, author=self.test_user).exists())
+        self.authorized_client.get(
+            reverse('profile_unfollow', args=[self.test_user.username])
+        )
+        self.assertFalse(Follow.objects.filter(user=self.follower, author=self.test_user).exists())
+
+    def test_follow_index(self):
+        '''Новая запись пользователя появляется в ленте тех, кто на него подписан'''
+        self.authorized_client.force_login(self.follower)
+        self.authorized_client.get(
+            reverse('profile_follow', args=[self.test_user.username])
+        )
+        response = self.authorized_client.get(reverse('follow_index'))
+        self.post_at_page(response)
+        guest_response = self.guest_client.get(reverse('follow_index'))
+        self.assertEqual(guest_response.status_code, HTTPStatus.FOUND)
+
+
+
+
+
+
