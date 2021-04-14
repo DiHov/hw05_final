@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -30,6 +31,7 @@ class URLTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.test_user)
+        cache.clear()
 
     def test_urls_status_200(self):
         """Проверка доступности адреса"""
@@ -96,3 +98,4 @@ class URLTests(TestCase):
             with self.subTest():
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
+

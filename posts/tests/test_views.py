@@ -5,11 +5,11 @@ from http import HTTPStatus
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
-
-from posts.models import Group, Post, Follow
+from posts.models import Follow, Group, Post
 
 
 class ViewTests(TestCase):
@@ -59,6 +59,7 @@ class ViewTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.test_user)
+        cache.clear()
 
     def post_at_page(self, response):
         if 'post' in response.context:
@@ -76,7 +77,7 @@ class ViewTests(TestCase):
 
     def test_index_shows_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
-        response = self.authorized_client.get(reverse('index'))
+        response = self.guest_client.get(reverse('index'))
         self.assertIn('page', response.context)
         self.post_at_page(response)
 
@@ -153,30 +154,37 @@ class ViewTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     def test_profile_follow_unfollow(self):
-        '''Авторизованный пользователь может подписываться и удалять из подписок.'''
+        '''Авторизованный пользователь может добавлять и удалять подписки.'''
         self.authorized_client.force_login(self.follower)
         self.authorized_client.get(
-            reverse('profile_follow', args=[self.test_user.username])
+            reverse('profile_follow', args=[self.test_user.username, ])
         )
-        self.assertTrue(Follow.objects.filter(user=self.follower, author=self.test_user).exists())
+        self.assertTrue(Follow.objects.filter(
+            user=self.follower,
+            author=self.test_user).exists())
         self.authorized_client.get(
-            reverse('profile_unfollow', args=[self.test_user.username])
+            reverse('profile_unfollow', args=[self.test_user.username, ])
         )
-        self.assertFalse(Follow.objects.filter(user=self.follower, author=self.test_user).exists())
+        self.assertFalse(Follow.objects.filter(
+            user=self.follower,
+            author=self.test_user).exists())
 
     def test_follow_index(self):
-        '''Новая запись пользователя появляется в ленте тех, кто на него подписан'''
+        '''Новая запись появляется в ленте тех, кто на него подписан'''
         self.authorized_client.force_login(self.follower)
-        self.authorized_client.get(
-            reverse('profile_follow', args=[self.test_user.username])
-        )
+        Follow.objects.create(user=self.follower, author=self.test_user)
         response = self.authorized_client.get(reverse('follow_index'))
         self.post_at_page(response)
         guest_response = self.guest_client.get(reverse('follow_index'))
         self.assertEqual(guest_response.status_code, HTTPStatus.FOUND)
 
-
-
-
-
-
+    def test_cash_template(self):
+        """Проверка что кэш работает"""
+        response = self.authorized_client.get(reverse('index'))
+        Post.objects.create(
+            text='Текст тестового поста',
+            author=self.test_user,
+            group=self.group
+        )
+        response_add = self.authorized_client.get(reverse('index'))
+        self.assertEqual(response.content, response_add.content)
