@@ -98,4 +98,3 @@ class URLTests(TestCase):
             with self.subTest():
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
-
