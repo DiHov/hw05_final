@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.cache import cache_page
 from yatube.settings import PAGINATOR
 
 from .forms import CommentForm, PostForm
@@ -11,7 +10,6 @@ from .models import Group, Post, Follow
 User = get_user_model()
 
 
-# @cache_page(20)
 def index(request):
     post_list = Post.objects.all()
     paginator = Paginator(post_list, PAGINATOR)
@@ -108,8 +106,6 @@ def post_edit(request, username, post_id):
 @login_required
 def add_comment(request, username, post_id):
     post = get_object_or_404(Post, id=post_id, author__username=username)
-    if request.user == post.author:
-        return redirect('post', username, post_id)
     form = CommentForm(request.POST)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -117,8 +113,6 @@ def add_comment(request, username, post_id):
         comment.post = post
         comment.save()
     return redirect('post', username, post_id)
-
-    # return render(request, 'view_post.html', {'form': form})
 
 
 def page_not_found(request, exception):
