@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
+
 from posts.models import Follow, Group, Post
 
 
@@ -38,7 +39,7 @@ class ViewTests(TestCase):
             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
             b'\x0A\x00\x3B'
         )
-        uploaded = SimpleUploadedFile(
+        cls.uploaded = SimpleUploadedFile(
             name='small.gif',
             content=small_gif,
             content_type='image/gif'
@@ -47,7 +48,7 @@ class ViewTests(TestCase):
             text='Текст тестового поста',
             author=cls.test_user,
             group=cls.group,
-            image=uploaded
+            image=cls.uploaded
         )
 
     @classmethod
@@ -196,7 +197,11 @@ class ViewTests(TestCase):
         Post.objects.create(
             text='Текст тестового поста',
             author=self.test_user,
-            group=self.group
+            group=self.group,
+            image='posts/small.gif'
         )
         response_add = self.authorized_client.get(reverse('index'))
         self.assertEqual(response.content, response_add.content)
+        cache.clear()
+        response = self.authorized_client.get(reverse('index'))
+        self.post_at_page(response)
