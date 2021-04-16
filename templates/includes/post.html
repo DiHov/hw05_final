@@ -18,11 +18,9 @@
                           Комментариев: {{ post.comments.count }} &nbsp;
                         </div>
                         {% endif %}
-                            {% if add_comment %} 
                             <a class="btn btn-sm btn-primary" href="{% url 'post' post.author.username post.id %}" role="button">
                               Добавить комментарий
                             </a>
-                            {% endif %}
                             {% if request.user == post.author %}
                             <a class="btn btn-sm text-muted" href="{% url 'post_edit' post.author.username post.id %}" role="button">Редактировать</a>
                             {% endif %}

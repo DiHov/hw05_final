@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
-from yatube.settings import PAGINATOR
+from yatube.settings import PAGINATOR, COMMENT_PER_PAGE
 
 from .forms import CommentForm, PostForm
 from .models import Group, Post, Follow
@@ -70,7 +70,7 @@ def post_view(request, username, post_id):
             user=request.user).exists()
     else:
         following = False
-    paginator = Paginator(comments, 4)
+    paginator = Paginator(comments, COMMENT_PER_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(

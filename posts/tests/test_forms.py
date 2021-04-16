@@ -25,6 +25,10 @@ class PostFormTests(TestCase):
             username='testuser1',
             password='12345'
         )
+        cls.follower = User.objects.create_user(
+            username='follower',
+            password='12345'
+        )
         cls.small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
@@ -87,7 +91,7 @@ class PostFormTests(TestCase):
         self.assertEqual(last_object.text, form_data['text'])
         self.assertEqual(last_object.author, self.user)
         self.assertEqual(last_object.group.id, form_data['group'])
-        self.assertIsNotNone(response.context["post"].image)
+        self.assertIsNotNone(last_object.image)
 
     def test_edit_post(self):
         '''Проверка редактирования поста'''
@@ -139,6 +143,32 @@ class PostFormTests(TestCase):
             f'{url_login}?next={url_add}'
         )
         self.assertEqual(Comment.objects.count(), count)
+
+    def test_add_comment(self):
+        '''Проверка создания коммента'''
+        post = Post.objects.create(
+            text='Текст тестового поста',
+            author=self.user,
+            group=self.group
+        )
+        count = Comment.objects.count()
+        self.authorized_client.force_login(self.follower)
+        form_data = {
+            'text': 'Текст тестового коммента',
+        }
+        url_add = reverse('add_comment', args=[self.user.username, post.id])
+        response = self.authorized_client.post(
+            url_add,
+            data=form_data,
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            reverse('post', args=[self.user.username, post.id])
+        )
+        self.assertEqual(Comment.objects.count(), count + 1)
+        last_object = Comment.objects.last()
+        self.assertEqual(last_object.text, form_data['text'])
 
 
 class FormFieldsTests(TestCase):

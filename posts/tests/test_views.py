@@ -87,14 +87,8 @@ class ViewTests(TestCase):
             reverse('group', kwargs={'slug': self.group.slug})
         )
         group = response.context['group']
-        self.assertEqual(
-            group.title,
-            'Заголовок тестовой группы'
-        )
-        self.assertEqual(
-            group.description,
-            'Тестовое описание'
-        )
+        self.assertEqual(group.title, self.group.title)
+        self.assertEqual(group.description, self.group.description)
         self.assertEqual(group.slug, self.group.slug)
         self.assertIn('page', response.context)
         self.post_at_page(response)
@@ -153,8 +147,9 @@ class ViewTests(TestCase):
         response = self.guest_client.get('/unknownuser/')
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
-    def test_profile_follow_unfollow(self):
-        '''Авторизованный пользователь может добавлять и удалять подписки.'''
+    def test_profile_follow(self):
+        '''Авторизованный пользователь может добавлять подписки.'''
+        count = Follow.objects.count()
         self.authorized_client.force_login(self.follower)
         self.authorized_client.get(
             reverse('profile_follow', args=[self.test_user.username, ])
@@ -162,12 +157,26 @@ class ViewTests(TestCase):
         self.assertTrue(Follow.objects.filter(
             user=self.follower,
             author=self.test_user).exists())
+        self.assertEqual(Follow.objects.count(), count + 1)
+        last_object = Follow.objects.last()
+        self.assertEqual(last_object.user, self.follower)
+        self.assertEqual(last_object.author, self.test_user)
+
+    def test_profile_unfollow(self):
+        '''Авторизованный пользователь может удалять подписки.'''
+        count = Follow.objects.count()
+        self.authorized_client.force_login(self.follower)
+        Follow.objects.create(user=self.follower, author=self.test_user)
+        last_object = Follow.objects.last()
+        self.assertEqual(last_object.user, self.follower)
+        self.assertEqual(last_object.author, self.test_user)
         self.authorized_client.get(
             reverse('profile_unfollow', args=[self.test_user.username, ])
         )
         self.assertFalse(Follow.objects.filter(
             user=self.follower,
             author=self.test_user).exists())
+        self.assertEqual(Follow.objects.count(), count)
 
     def test_follow_index(self):
         '''Новая запись появляется в ленте тех, кто на него подписан'''
@@ -175,6 +184,9 @@ class ViewTests(TestCase):
         Follow.objects.create(user=self.follower, author=self.test_user)
         response = self.authorized_client.get(reverse('follow_index'))
         self.post_at_page(response)
+
+    def test_guest_follow_index(self):
+        '''Лента недоступна неавторизованным пользователям'''
         guest_response = self.guest_client.get(reverse('follow_index'))
         self.assertEqual(guest_response.status_code, HTTPStatus.FOUND)
 

@@ -5,11 +5,11 @@
 {% load user_filters %}
 <main role="main" class="container">
     <div class="row">
-        {% include "includes/card.html" with author=author following=following %}
+        {% include "includes/author_card.html" with author=author following=following is_profile=True %}
 
         <div class="col-md-9">                
             {% for post in page %} 
-                {% include "includes/post.html" with post=post add_comment=True %}
+                {% include "includes/post.html" with post=post %}
             {% endfor %} 
             {% include "includes/paginator.html" %}
         </div>
