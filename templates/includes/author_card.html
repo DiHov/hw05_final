@@ -23,7 +23,7 @@
                                 Записей: {{ author.posts.count }}
                             </div>
                     </li>
-                    {% if is_profile %} 
+                    {% if author != request.user and is_profile %} 
                     <li class="list-group-item">
                         {% if following %}
                         <a class="btn btn-lg btn-light" 

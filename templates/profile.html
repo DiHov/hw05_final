@@ -5,11 +5,8 @@
 {% load user_filters %}
 <main role="main" class="container">
     <div class="row">
-        {% if user.is_authenticated and author != request.user %}
-            {% include "includes/author_card.html" with author=author following=following is_profile=True %}
-        {% else %}
-            {% include "includes/author_card.html" with author=author following=following  %}
-        {% endif %}
+        
+        {% include "includes/author_card.html" with author=author following=following is_profile=True %}
 
         <div class="col-md-9">                
             {% for post in page %} 

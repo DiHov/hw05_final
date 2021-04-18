@@ -26,10 +26,6 @@ class PostFormTests(TestCase):
             username='testuser1',
             password='12345'
         )
-        cls.follower = User.objects.create_user(
-            username='follower',
-            password='12345'
-        )
 
     @classmethod
     def tearDownClass(cls):
@@ -153,7 +149,6 @@ class PostFormTests(TestCase):
             group=self.group
         )
         count = Comment.objects.count()
-        self.authorized_client.force_login(self.follower)
         form_data = {
             'text': 'Текст тестового коммента',
         }

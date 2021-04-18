@@ -181,7 +181,7 @@ class ViewTests(TestCase):
         guest_response = self.guest_client.get(reverse('follow_index'))
         self.assertEqual(guest_response.status_code, HTTPStatus.FOUND)
 
-    def test_cash_template(self):
+    def test_cache_template(self):
         """Проверка что кэш работает"""
         response = self.authorized_client.get(reverse('index'))
         Post.objects.create(
